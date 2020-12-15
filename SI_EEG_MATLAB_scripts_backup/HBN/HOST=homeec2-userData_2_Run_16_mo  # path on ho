@@ -1,0 +1,14 @@
+HOST=/home/ec2-user/Data_spot_r4large_1 # path on host to access input/output
+DOCK=/home/jovyan/work  # path to HOST from Docker container
+
+rm $HOST'/running_command.txt'
+for i in $(find $HOST -iname '*nii.gz*');do
+    echo $i
+    ID=$(basename $(dirname $i))
+    HOST=$HOST
+    IMAGE=$DOCK'/'$(basename $i)
+    # log command output: 2>&1 | tee my.log
+    echo 'docker run --rm -t -v '$HOST'/'$ID':'$DOCK' nipy/mindboggle '$IMAGE' --id '$ID' --plugin MultiProc --plugin_args "dict(n_procs=2)" --fs_openmp 4 --ants_num_threads 4 --mb_num_threads 2>&1 | tee '$DOCK'/'$ID'/sdout.log' >> $HOST'/running_command.txt'
+done
+chmod -R 777 $HOST
+
